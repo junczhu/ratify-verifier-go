@@ -27,7 +27,7 @@ import (
 	"github.com/sigstore/cosign/v2/pkg/cosign/bundle"
 	"github.com/sigstore/cosign/v2/pkg/oci"
 	"github.com/sigstore/cosign/v2/pkg/oci/static"
-	"github.com/sigstore/sigstore/pkg/signature"
+	"github.com/sigstore/sigstore-go/pkg/root"
 )
 
 const (
@@ -36,16 +36,28 @@ const (
 )
 
 type Verifier struct {
-	name     string
-	verifier signature.Verifier
+	name             string
+	trustedMaterials map[string]root.TrustedMaterial
+	// trustedRoot *prototrustroot.TrustedRoot
+}
+
+type VerifierOptions struct {
+	// Name is the instance name of the verifier to be created. Required.
+	Name string
+
+	// TrustedMaterials is the trusted material collection to use for
+	// verification. It should mapping to the sigature to the trust material.
+	// Optimized for the cosign verifier referring the multiplexer.
+	TrustedMaterials map[string]root.TrustedMaterial
 }
 
 // TODO: handle the root trust import
-// TODO: handle the checkOpts parsing
-func NewVerifier(name string, verifier signature.Verifier) ratify.Verifier {
+// TODO: handle the trust material to checkOpts parsing
+func NewVerifier(opts *VerifierOptions) ratify.Verifier {
 	return &Verifier{
-		name:     name,
-		verifier: verifier,
+		name:             opts.Name,
+		trustedMaterials: opts.TrustedMaterials,
+		// trustedRoot: root.NewTrustedRoot()
 	}
 }
 
